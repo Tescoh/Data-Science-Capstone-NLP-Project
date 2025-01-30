@@ -1,0 +1,12 @@
+name: Prediction_App
+title: Prediction_APP
+username: ml73o6-mohammed-teslim
+account: ml73o6-mohammed-teslim
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13855183
+bundleId: 9723265
+url: https://ml73o6-mohammed-teslim.shinyapps.io/Prediction_App/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

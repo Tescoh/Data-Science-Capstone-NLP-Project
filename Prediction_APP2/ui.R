@@ -2,6 +2,7 @@
 library(shiny)
 library(bslib)
 library(shinycssloaders)
+library(dplyr)
 
 ui <- page_fillable(
   theme = bs_theme(
@@ -57,6 +58,7 @@ ui <- page_fillable(
       
       h1(class = "text-center gradient-header mb-5 display-4 fw-bold",
          "Next Word Predictor"),
+      h4("AI-Powered Text Prediction Engine", class = "mt-1"),
       
       div(class = "input-group mb-4",
           textInput("user_input", 

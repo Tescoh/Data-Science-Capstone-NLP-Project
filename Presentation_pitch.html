@@ -411,20 +411,19 @@ text from blogs, news articles, and Twitter posts.</p>
 <div id="algorithm" class="slide section level1">
 <h1>Algorithm</h1>
 <p>The app uses a statistical language model based on n-grams:</p>
-<ul>
-<li><strong>Quadgrams:</strong> Sequences of 4 words</li>
-<li><strong>Trigrams:</strong> Sequences of 3 words</li>
-<li><strong>Bigrams:</strong> Sequences of 2 words</li>
-<li><strong>Unigrams:</strong> Single words</li>
-</ul>
-<p><strong>Prediction Logic:</strong></p>
 <ol style="list-style-type: decimal">
-<li>The app first looks for matching quadgrams based on the last 3 words
-entered.</li>
-<li>If no quadgram is found, it “backs off” to trigrams, then bigrams,
-and finally unigrams.</li>
-<li>A discount factor (lambda) is applied during backoff to adjust
-probabilities.</li>
+<li><strong>4-gram Model</strong> with:
+<ul>
+<li>Kneser-Ney smoothing</li>
+<li>Context window optimization</li>
+<li>Frequency-aware pruning (TOP_NGRAMS=500k)</li>
+</ul></li>
+<li><strong>Prediction Workflow:</strong>
+<ul>
+<li>Real-time input normalization</li>
+<li>Hash-based n-gram lookup</li>
+<li>Fallback cascade (4→3→2→1-gram)</li>
+</ul></li>
 </ol>
 </div>
 <div id="the-app" class="slide section level1">
@@ -436,16 +435,15 @@ phrase.</li>
 <li><strong>Output:</strong>
 <ul>
 <li>The top predicted next word.</li>
-<li>A table showing the top 3 predictions with their probabilities.</li>
+<li>Showing the top 3 predictions.</li>
 </ul></li>
 </ul>
 <p><strong>Instructions:</strong></p>
 <ol style="list-style-type: decimal">
 <li>Type a phrase in the input box.</li>
-<li>Click the “Predict” button.</li>
-<li>View the predicted next word(s).</li>
+<li>Automatically generates the predicted next word(s).</li>
 </ol>
-<p><strong>Link to App:</strong> <a href="https://ml73o6-mohammed-teslim.shinyapps.io/Teslim_NLP_Project/" class="uri">https://ml73o6-mohammed-teslim.shinyapps.io/Teslim_NLP_Project/</a></p>
+<p><strong>Link to App:</strong> <a href="https://ml73o6-mohammed-teslim.shinyapps.io/Prediction_App//" class="uri">Prediction_App</a></p>
 </div>
 <div id="how-it-works" class="slide section level1">
 <h1>How it Works</h1>

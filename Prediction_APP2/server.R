@@ -5,6 +5,7 @@ library(stringr)
 library(textclean)
 library(pryr)
 library(shinycssloaders)
+library(dplyr)
 
 NGRAM_MAX <- 4      # Maximum n-gram length
 MIN_COUNT <- 2      # Minimum n-gram frequency

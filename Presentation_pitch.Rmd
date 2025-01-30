@@ -21,16 +21,14 @@ Goal: To provide a fast and accurate word prediction experience.
 
 The app uses a statistical language model based on n-grams:
 
--   **Quadgrams:** Sequences of 4 words
--   **Trigrams:** Sequences of 3 words
--   **Bigrams:** Sequences of 2 words
--   **Unigrams:** Single words
-
-**Prediction Logic:**
-
-1.  The app first looks for matching quadgrams based on the last 3 words entered.
-2.  If no quadgram is found, it "backs off" to trigrams, then bigrams, and finally unigrams.
-3.  A discount factor (lambda) is applied during backoff to adjust probabilities.
+1.  **4-gram Model** with:
+    -   Kneser-Ney smoothing
+    -   Context window optimization
+    -   Frequency-aware pruning (TOP_NGRAMS=500k)
+2.  **Prediction Workflow:**
+    -   Real-time input normalization
+    -   Hash-based n-gram lookup
+    -   Fallback cascade (4→3→2→1-gram)
 
 # The App
 
@@ -39,15 +37,14 @@ The Shiny app provides a simple interface:
 -   **Input:** A text box where the user enters a phrase.
 -   **Output:**
     -   The top predicted next word.
-    -   A table showing the top 3 predictions with their probabilities.
+    -   Showing the top 3 predictions.
 
 **Instructions:**
 
 1.  Type a phrase in the input box.
-2.  Click the "Predict" button.
-3.  View the predicted next word(s).
+2.  Automatically generates the predicted next word(s).
 
-**Link to App:** https://ml73o6-mohammed-teslim.shinyapps.io/Teslim_NLP_Project/
+**Link to App:** [Prediction_App](https://ml73o6-mohammed-teslim.shinyapps.io/Prediction_App//){.uri}
 
 # How it Works
 
