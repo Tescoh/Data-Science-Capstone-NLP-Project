@@ -1,0 +1,69 @@
+---
+title: "TEXT PREDICTION APP"
+author: "Mohammed Teslim"
+date: "2025-01-18"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+
+This presentation introduces a predictive text application that suggests the next word a user might type.
+
+The app uses an n-gram language model trained on a large corpus of text from blogs, news articles, and Twitter posts.
+
+Goal: To provide a fast and accurate word prediction experience.
+
+# Algorithm
+
+The app uses a statistical language model based on n-grams:
+
+-   **Quadgrams:** Sequences of 4 words
+-   **Trigrams:** Sequences of 3 words
+-   **Bigrams:** Sequences of 2 words
+-   **Unigrams:** Single words
+
+**Prediction Logic:**
+
+1.  The app first looks for matching quadgrams based on the last 3 words entered.
+2.  If no quadgram is found, it "backs off" to trigrams, then bigrams, and finally unigrams.
+3.  A discount factor (lambda) is applied during backoff to adjust probabilities.
+
+# The App
+
+The Shiny app provides a simple interface:
+
+-   **Input:** A text box where the user enters a phrase.
+-   **Output:**
+    -   The top predicted next word.
+    -   A table showing the top 3 predictions with their probabilities.
+
+**Instructions:**
+
+1.  Type a phrase in the input box.
+2.  Click the "Predict" button.
+3.  View the predicted next word(s).
+
+**Link to App:** https://ml73o6-mohammed-teslim.shinyapps.io/Teslim_NLP_Project/
+
+# How it Works
+
+-   The app cleans the input text (removes punctuation, converts to lowercase, etc.).
+-   It then uses the n-gram model to find the most probable next word based on the preceding words.
+-   The backoff mechanism ensures that a prediction is always provided, even for unseen word combinations.
+-   The app is optimized for speed by using efficient data structures (`data.table`) and pre-computed probabilities.
+
+# Conclusion
+
+This app demonstrates the power of n-gram models for next-word prediction.
+
+**Future Improvements:**
+
+-   Implement more advanced smoothing techniques.
+-   Experiment with larger n-gram models (e.g., 5-grams).
+-   Explore using recurrent neural networks (RNNs) for improved accuracy.
+
+Thank you!

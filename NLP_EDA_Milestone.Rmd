@@ -1,0 +1,262 @@
+---
+title: "Exploratory Analysis of Text Data for Predictive Modeling"
+author: "Mohammed Teslim"
+date: "2025-01-18"
+output: html_document
+---
+
+
+```{r setup, include=FALSE, cache=TRUE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(quanteda)
+library(quanteda.textstats)
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(tm)
+library(dplyr)
+```
+
+## Introduction
+
+This report summarizes the initial exploration of a large text dataset that will be used to build a predictive text application, similar to the auto-complete feature found on many smartphones. The goal of this application is to predict the next word a user is likely to type, based on the preceding words they have entered.
+
+## Data Source
+
+The data consists of text collected from three different sources:
+
+*   **Blogs:** Entries from personal blogs.
+*   **News:** Articles from news websites.
+*   **Twitter:** Posts from the social media platform Twitter.
+
+These three sources represent a diverse range of writing styles and topics, which is important for building a robust and versatile prediction model.
+
+## Data Summary
+
+A preliminary analysis of the data reveals the following key statistics:
+
+```{r data_loading_and_cleaning, echo=FALSE, cache=TRUE}
+# Set data directory (replace with actual path)
+data_dir <- "C:/Users/User/Documents/GitRepos/Data_Science_Capstone_NLP/final/en_US" 
+
+# Define function for cleaning text
+clean_text <- function(text) {
+  # 1. Remove URLs
+  text <- str_replace_all(text, "http\\S+|www\\.\\S+", "")
+  
+  # 2. Remove Twitter handles and hashtags 
+    text <- str_replace_all(text, "@\\S+", "")
+    text <- str_replace_all(text, "#\\S+", "")
+  
+  # 3. Convert to lowercase
+  text <- tolower(text)
+  
+  # 4. Remove punctuation (except apostrophes)
+  text <- str_replace_all(text, "[^[:alnum:]'\\s]", "")
+  
+  # 5. Remove numbers
+  text <- removeNumbers(text)
+  
+  # 6. Remove extra whitespace
+  text <- str_replace_all(text, "\\s+", " ")
+  text <- str_trim(text)
+  
+  return(text)
+}
+
+# Function to clean a single file (modified to process in chunks)
+clean_file <- function(filepath, chunk_size = 100000) {
+  con <- file(filepath, "r")
+  on.exit(close(con)) # Ensure connection is closed even if an error occurs
+  
+  cleaned_chunks <- list()
+  i <- 1
+  
+  while (TRUE) {
+    lines <- readLines(con, n = chunk_size)
+    if (length(lines) == 0) {
+      break # End of file
+    }
+    
+    cleaned_chunk <- clean_text(lines)
+    cleaned_chunks[[i]] <- cleaned_chunk
+    i <- i + 1
+  }
+  
+  return(unlist(cleaned_chunks))
+}
+
+# Clean all three files in chunks
+cleaned_blogs <- clean_file(file.path(data_dir, "en_US.blogs.txt"))
+cleaned_news <- clean_file(file.path(data_dir, "en_US.news.txt"))
+cleaned_twitter <- clean_file(file.path(data_dir, "en_US.twitter.txt"))
+
+# Combine the cleaned data
+all_cleaned <- c(cleaned_blogs, cleaned_news, cleaned_twitter)
+```
+
+```{r line_word_counts, echo=FALSE, cache=TRUE}
+# Load the data
+blogs <- readLines(file.path(data_dir, "en_US.blogs.txt"), encoding = "UTF-8", skipNul = TRUE)
+news <- readLines(file.path(data_dir, "en_US.news.txt"), encoding = "UTF-8", skipNul = TRUE)
+twitter <- readLines(file.path(data_dir, "en_US.twitter.txt"), encoding = "UTF-8", skipNul = TRUE)
+
+# Basic statistics
+data_summary <- data.frame(
+  File = c("Blogs", "News", "Twitter"),
+  Lines = c(length(blogs), length(news), length(twitter)),
+  Words = c(sum(sapply(strsplit(blogs, "\\s+"), length)),
+            sum(sapply(strsplit(news, "\\s+"), length)),
+            sum(sapply(strsplit(twitter, "\\s+"), length))),
+  Unique_Words = c(length(unique(unlist(strsplit(blogs, "\\s+")))),
+                   length(unique(unlist(strsplit(news, "\\s+")))),
+                   length(unique(unlist(strsplit(twitter, "\\s+")))))
+)
+
+knitr::kable(data_summary, format = "markdown")
+```
+
+**Observations:**
+
+*   Twitter has the most lines due to its short message format but the fewest words per line.
+*   Blogs and News have a similar number of lines, but Blogs contain slightly more words overall.
+*   The number of unique words highlights the rich vocabulary present in the dataset.
+
+## Word Frequency Analysis
+
+An analysis of word frequencies reveals that a small number of words account for a large proportion of the text. This is a common characteristic of natural language.
+
+```{r word_frequency, echo=FALSE, cache=TRUE}
+# Tokenize the combined cleaned data
+tokens <- tokens(all_cleaned, what = "word")
+
+# Sample profanity list (replace with a comprehensive one)
+profanity_list <- readLines("profanity.txt")
+
+# Remove profanity and stopwords
+tokens_no_profanity <- tokens_remove(tokens, pattern = profanity_list)
+tokens_no_stopwords <- tokens_select(tokens_no_profanity, pattern = stopwords("en"), selection = "remove")
+
+# Create a document-feature matrix (DFM)
+dfm <- dfm(tokens_no_stopwords)
+
+# Get word frequencies
+word_freq <- textstat_frequency(dfm)
+
+# Plot the top 20 most frequent words
+top_words <- word_freq[1:20, ]
+ggplot(top_words, aes(x = reorder(feature, frequency), y = frequency)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    xlab("Word") +
+    ylab("Frequency") +
+    ggtitle("Top 20 Most Frequent Words")
+```
+
+**Histogram of Top 20 Most Frequent Words**
+
+The histogram above shows the top 20 most frequent words in the combined dataset. As you can see, these are mostly common words like "the," "to," "and," and "a."
+
+```{r cumulative_word_coverage, echo=FALSE, cache=TRUE}
+# Calculate cumulative frequencies
+word_freq$cumulative_freq <- cumsum(word_freq$frequency)
+word_freq$cumulative_prop <- word_freq$cumulative_freq / sum(word_freq$frequency)
+
+# Plot cumulative frequencies
+ggplot(word_freq, aes(x = rank, y = cumulative_prop)) +
+    geom_line() +
+    xlab("Rank") +
+    ylab("Cumulative Proportion") +
+    ggtitle("Cumulative Word Frequencies")
+```
+
+**Cumulative Word Coverage**
+
+The plot above illustrates how many unique words are needed to cover a certain percentage of all word occurrences in the text.
+
+```{r coverage_numbers, echo=FALSE, cache=TRUE}
+# Find the number of unique words needed to cover 50% and 90% of word instances
+total_words <- sum(word_freq$frequency)
+word_freq <- word_freq[order(-word_freq$frequency), ]  # Sort by frequency (descending)
+word_freq$cum_freq <- cumsum(word_freq$frequency)
+word_freq$cum_prop <- word_freq$cum_freq / total_words
+
+coverage_50 <- min(which(word_freq$cum_prop >= 0.5))
+coverage_90 <- min(which(word_freq$cum_prop >= 0.9))
+
+cat("Words needed to cover 50% of instances:", coverage_50, "\n")
+cat("Words needed to cover 90% of instances:", coverage_90, "\n")
+```
+
+**Key Findings:**
+
+*   Just `coverage_50` unique words are needed to cover 50% of all word instances.
+*   `coverage_90` unique words cover 90% of all word instances.
+
+This finding suggests that we can potentially build a smaller and more efficient prediction model by focusing on the most frequent words.
+
+## N-gram Analysis (Word Combinations)
+
+In addition to individual words, we also analyzed common combinations of 2 words (bigrams) and 3 words (trigrams).
+
+```{r ngram_analysis, echo=FALSE, cache=TRUE}
+# Create 2-grams
+bigrams <- tokens_ngrams(tokens_no_stopwords, n = 2)
+dfm_bigrams <- dfm(bigrams)
+bigram_freq <- textstat_frequency(dfm_bigrams)
+
+# Create 3-grams
+trigrams <- tokens_ngrams(tokens_no_stopwords, n = 3)
+dfm_trigrams <- dfm(trigrams)
+trigram_freq <- textstat_frequency(dfm_trigrams)
+
+# Top 5 bigrams
+top_bigrams <- bigram_freq[1:5, c("feature", "frequency")]
+knitr::kable(top_bigrams, format = "markdown")
+```
+
+**Top 5 Most Frequent Bigrams**
+
+The table above shows the 5 most frequent bigrams and their counts.
+
+```{r trigrams_table, echo=FALSE, cache=TRUE}
+# Top 5 trigrams
+top_trigrams <- trigram_freq[1:5, c("feature", "frequency")]
+knitr::kable(top_trigrams, format = "markdown")
+```
+
+**Top 5 Most Frequent Trigrams**
+
+The table above shows the 5 most frequent trigrams and their counts.
+
+These common word combinations are essential for building a model that can accurately predict the next word in a sequence.
+
+## Plan for Prediction Algorithm and Shiny App
+
+### Algorithm
+
+The core of the prediction algorithm will be an **n-gram model**. This model calculates the probability of a word appearing, given the previous n-1 words (the context). We will use a combination of quadgrams (4 words), trigrams (3 words), bigrams (2 words), and unigrams (single words) to make predictions.
+
+A technique called **backoff** will be used to handle cases where a particular word combination is not found in the training data. In such cases, the model will "back off" to a lower-order n-gram (e.g., from a trigram to a bigram) to make a prediction.
+
+### Shiny App
+
+The prediction algorithm will be deployed as a user-friendly web application using the **Shiny** framework. The app will have a simple interface:
+
+1. A text input box where the user can type.
+2. A display area that shows the top 3 predicted words in real time.
+
+### Efficiency Considerations
+
+To ensure a responsive user experience, the model will be optimized for both size and speed:
+
+*   **Reduced Vocabulary:** The model will focus on the most frequent words to minimize memory usage.
+*   **Efficient Data Structures:** We will use optimized data structures (like `data.table`) for storing and retrieving n-gram probabilities.
+*   **Pre-computation:** As much as possible, calculations will be pre-computed and stored to reduce prediction time.
+
+## Conclusion
+
+This exploratory analysis has provided valuable insights into the structure and characteristics of the text data. These insights will guide the development of an efficient and accurate predictive text application. The next steps involve refining the n-gram model, implementing smoothing techniques to improve prediction accuracy, and building the Shiny app for deployment.
+```
+
