@@ -75,8 +75,8 @@ rmarkdown::render("App_Presentation_Pitch/Presentation_pitch.Rmd")
 ## Links
 
 - 🔗 [Live Application](<https://ml73o6-mohammed-teslim.shinyapps.io/Prediction_App/>)
-- 📊 [EDA Report](https://yourusername.github.io/repo/EDA_Report.html)
-- 🎥 [Presentation Pitch](https://yourusername.github.io/repo/App_Presentation_Pitch/Presentation_pitch.html)
+- 📊 [EDA Report](https://tescoh.github.io/Data-Science-Capstone-NLP-Project/EDA_Report_files/EDA_Report.html)
+- 🎥 [Presentation Pitch](https://tescoh.github.io/Data-Science-Capstone-NLP-Project/App_Presentation_Pitch/Presentation_pitch.html)
 
 ## License
 open
